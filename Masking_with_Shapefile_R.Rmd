@@ -1,0 +1,26 @@
+---
+title: "Masking raster with shapefile in R"
+author: "Hunter Mackin"
+date: "2023-01-07"
+output: html_document
+---
+
+```{r}
+library(ncdf4)
+library(tidyverse)
+library(rgdal)
+library(sp)
+library(raster)
+library(terra)
+```
+
+```{r}
+prcp_2000 <- raster::stack('gridmet_prcp_2000-01-01')
+shapefile <- shapefile("Central Sands/CS_polygon_combined.shp")
+shapefile <- spTransform(shapefile, crs(prcp_2000))
+prcp_2000 <- mask(prcp_2000, shapefile)
+prcp_2000 <- crop(prcp_2000, shapefile)
+outfile <- paste("prcp_","2000_","CS",".nc",sep="")
+writeRaster(prcp_2000, outfile, overwrite=TRUE, format="CDF", varname="prcp", varunit="mm/day", longname="mm of precipitation per day", xname="lon", yname="lat", zname="day", zunit="days since 1900-01-01")
+```
+
